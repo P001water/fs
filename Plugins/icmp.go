@@ -36,23 +36,25 @@ func sortIPs(ips []string) {
 	})
 }
 
-func IPsortHandleWorker(Ping bool, hostslist []string, AliveHostsChan chan string) {
+func IPsortHandleWorker(Ping bool, WaitCheckHosts []string, AliveHostsChan chan string) {
 	for ip := range AliveHostsChan {
-		if _, ok := ExistHosts[ip]; !ok && IsContain(hostslist, ip) {
+		if _, ok := ExistHosts[ip]; !ok && IsContain(WaitCheckHosts, ip) {
 			ExistHosts[ip] = struct{}{}
 			AliveHosts = append(AliveHosts, ip)
 		}
 		liveWG.Done()
 	}
+	liveWG.Wait()
 	sortIPs(AliveHosts)
+	tmpList := AliveHosts
 	if config.Silent == false {
 		if Ping == false {
-			for _, ip := range AliveHosts {
+			for _, ip := range tmpList {
 				result := fmt.Sprintf(" {icmp} Target %-15s is alive", ip)
 				config.LogSuccess(result)
 			}
 		} else {
-			for _, ip := range AliveHosts {
+			for _, ip := range tmpList {
 				result := fmt.Sprintf(" {ping} Target %-15s is alive", ip)
 				config.LogSuccess(result)
 			}
@@ -62,47 +64,44 @@ func IPsortHandleWorker(Ping bool, hostslist []string, AliveHostsChan chan strin
 	config.LogSuccess(tips)
 }
 
-func CheckHostLive(hostslist []string, Ping bool) []string {
+func CheckHostLive(WaitCheckHosts []string, Ping bool) []string {
 
 	// ip
-	HostsChan := make(chan string, len(hostslist))
-	go IPsortHandleWorker(Ping, hostslist, HostsChan)
+	AliveHostsChan := make(chan string, len(WaitCheckHosts))
+	go IPsortHandleWorker(Ping, WaitCheckHosts, AliveHostsChan)
 
-	if Ping == true {
-		//使用ping探测
-		RunPing(hostslist, HostsChan)
-	} else {
+	if Ping == false {
 		// 优先尝试监听本地icmp,批量探测
 		conn, err := icmp.ListenPacket("ip4:icmp", "0.0.0.0")
-		if err == nil {
-			RunIcmpWithLst(hostslist, conn, HostsChan)
-		} else {
+		if err != nil {
 			config.LogError(err)
 			//尝试无监听icmp探测
 			fmt.Println("trying RunIcmpWithoutLst")
 			conn, err := net.DialTimeout("ip4:icmp", "127.0.0.1", 3*time.Second)
-			defer func() {
-				if conn != nil {
-
-					conn.Close()
-				}
-			}()
-			if err == nil {
-				RunIcmpWithoutLst(hostslist, HostsChan)
-			} else {
+			if err != nil {
 				config.LogError(err)
 				//使用ping探测
 				fmt.Println("[-] The current user permissions unable to send icmp packets")
 				fmt.Println("[-] start ping")
-				RunPing(hostslist, HostsChan)
+				RunPing(WaitCheckHosts, AliveHostsChan)
+			} else {
+				RunIcmpWithoutLst(WaitCheckHosts, AliveHostsChan)
 			}
+			defer conn.Close()
 		}
+		defer conn.Close()
+		RunIcmpWithLst(WaitCheckHosts, conn, AliveHostsChan)
+	}
+
+	if Ping == true {
+		//使用ping探测
+		RunPing(WaitCheckHosts, AliveHostsChan)
 	}
 
 	liveWG.Wait()
-	close(HostsChan)
+	close(AliveHostsChan)
 
-	if len(hostslist) > 1000 {
+	if len(WaitCheckHosts) > 1000 {
 		arrTop, arrLen := ArrayCountValueTop(AliveHosts, config.LiveTop, true)
 		for i := 0; i < len(arrTop); i++ {
 			output := fmt.Sprintf("[*] LiveTop %-16s 段存活数量为: %d", arrTop[i]+".0.0/16", arrLen[i])
@@ -110,7 +109,7 @@ func CheckHostLive(hostslist []string, Ping bool) []string {
 		}
 	}
 
-	if len(hostslist) > 256 {
+	if len(WaitCheckHosts) > 256 {
 		arrTop, arrLen := ArrayCountValueTop(AliveHosts, config.LiveTop, false)
 		for i := 0; i < len(arrTop); i++ {
 			output := fmt.Sprintf("[*] LiveTop %-16s 段存活数量为: %d", arrTop[i]+".0/24", arrLen[i])
@@ -121,11 +120,11 @@ func CheckHostLive(hostslist []string, Ping bool) []string {
 	return AliveHosts
 }
 
-func RunIcmpWithLst(hostslist []string, conn *icmp.PacketConn, chanHosts chan string) {
-	endflag := false
+func RunIcmpWithLst(WaitCheckHosts []string, conn *icmp.PacketConn, chanHosts chan string) {
+	endFlag := false
 	go func() {
 		for {
-			if endflag == true {
+			if endFlag == true {
 				return
 			}
 			msg := make([]byte, 100)
@@ -137,7 +136,7 @@ func RunIcmpWithLst(hostslist []string, conn *icmp.PacketConn, chanHosts chan st
 		}
 	}()
 
-	for _, host := range hostslist {
+	for _, host := range WaitCheckHosts {
 		dst, _ := net.ResolveIPAddr("ip", host)
 		IcmpByte := makeICMPEchoRequest(host)
 		conn.WriteTo(IcmpByte, dst)
@@ -145,13 +144,13 @@ func RunIcmpWithLst(hostslist []string, conn *icmp.PacketConn, chanHosts chan st
 	//根据hosts数量修改icmp监听时间
 	start := time.Now()
 	for {
-		if len(AliveHosts) == len(hostslist) {
+		if len(AliveHosts) == len(WaitCheckHosts) {
 			break
 		}
 		since := time.Since(start)
 		var wait time.Duration
 		switch {
-		case len(hostslist) <= 256:
+		case len(WaitCheckHosts) <= 256:
 			wait = time.Second * 3
 		default:
 			wait = time.Second * 6
@@ -160,7 +159,7 @@ func RunIcmpWithLst(hostslist []string, conn *icmp.PacketConn, chanHosts chan st
 			break
 		}
 	}
-	endflag = true
+	endFlag = true
 	conn.Close()
 }
 
@@ -210,7 +209,7 @@ func icmpalive(host string) bool {
 	return true
 }
 
-func RunPing(hostslist []string, chanHosts chan string) {
+func RunPing(hostslist []string, AliveHostsChan chan string) {
 	var wg sync.WaitGroup
 	limiter := make(chan struct{}, 50)
 	for _, host := range hostslist {
@@ -219,7 +218,7 @@ func RunPing(hostslist []string, chanHosts chan string) {
 		go func(host string) {
 			if ExecPingCmd(host) {
 				liveWG.Add(1)
-				chanHosts <- host
+				AliveHostsChan <- host
 			}
 			<-limiter
 			wg.Done()

@@ -12,7 +12,7 @@ import (
 
 func Scan(info config.HostInfo) {
 	fmt.Println("[*] start_Live_scan")
-	AllHosts, err := config.ParseIP(info.Host, config.HostFile, config.NoHosts)
+	WaitCheckHosts, err := config.ParseIP(info.Host, config.HostFile, config.NoHosts)
 	if err != nil {
 		fmt.Println("[-] No_target_host", err)
 		return
@@ -28,9 +28,9 @@ func Scan(info config.HostInfo) {
 	var AliveHosts []string
 	var AliveAddr []string
 	// 存活主机探测
-	if len(AllHosts) > 0 {
+	if len(WaitCheckHosts) > 0 {
 		if config.NoPing == false || config.Scantype == "icmp" {
-			AliveHosts = CheckHostLive(AllHosts, config.Ping)
+			AliveHosts = CheckHostLive(WaitCheckHosts, config.Ping)
 		}
 		if config.Scantype == "icmp" {
 			config.LogWG.Wait()
@@ -102,8 +102,8 @@ func Scan(info config.HostInfo) {
 	}
 	wg.Wait()
 	config.LogWG.Wait()
-	close(config.ResultsChan)
 	fmt.Printf("[+] 已完成 %v/%v\n", config.End, config.Num)
+	close(config.ResultsChan)
 }
 
 var Mutex = &sync.Mutex{}

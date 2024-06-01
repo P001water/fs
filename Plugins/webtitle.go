@@ -143,7 +143,7 @@ func geturl(info *config.HostInfo, flag int, CheckData []WebScan.CheckDatas) (er
 		if !utf8.Valid(body) {
 			body, _ = simplifiedchinese.GBK.NewDecoder().Bytes(body)
 		}
-		title = gettitle(body)
+		title = getTitle(body)
 		length := resp.Header.Get("Content-Length")
 		if length == "" {
 			length = fmt.Sprintf("%v", len(body))
@@ -196,7 +196,7 @@ func getRespBody(oResp *http.Response) ([]byte, error) {
 	return body, nil
 }
 
-func gettitle(body []byte) (title string) {
+func getTitle(body []byte) (title string) {
 	re := regexp.MustCompile("(?ims)<title.*?>(.*?)</title>")
 	find := re.FindSubmatch(body)
 	if len(find) > 1 {

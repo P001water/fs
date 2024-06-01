@@ -38,10 +38,11 @@ func sortIPs(ips []string) {
 
 func IPsortHandleWorker(Ping bool, WaitCheckHosts []string, AliveHostsChan chan string) {
 	for ip := range AliveHostsChan {
-		if _, ok := ExistHosts[ip]; !ok && IsContain(WaitCheckHosts, ip) {
-			ExistHosts[ip] = struct{}{}
-			AliveHosts = append(AliveHosts, ip)
-		}
+		//if _, ok := ExistHosts[ip]; !ok && IsContain(WaitCheckHosts, ip) {
+		//	ExistHosts[ip] = struct{}{}
+		//	AliveHosts = append(AliveHosts, ip)
+		//}
+		AliveHosts = append(AliveHosts, ip)
 		liveWG.Done()
 	}
 	liveWG.Wait()
@@ -60,13 +61,13 @@ func IPsortHandleWorker(Ping bool, WaitCheckHosts []string, AliveHostsChan chan 
 			}
 		}
 	}
-	tips := fmt.Sprintf("[*] Alive_Hosts: %d", len(AliveHosts))
+	tips := fmt.Sprintf("[*] Alive_Hosts: %d", len(tmpList))
 	config.LogSuccess(tips)
 }
 
 func CheckHostLive(WaitCheckHosts []string, Ping bool) []string {
 
-	// ip
+	// chan 接收存活主机并处理
 	AliveHostsChan := make(chan string, len(WaitCheckHosts))
 	go IPsortHandleWorker(Ping, WaitCheckHosts, AliveHostsChan)
 
@@ -231,14 +232,17 @@ func ExecPingCmd(ip string) bool {
 	var command *exec.Cmd
 	switch runtime.GOOS {
 	case "windows":
-		command = exec.Command("cmd", "/c", "ping -n 1 -w 1 "+ip+" && echo true || echo false") //ping -c 1 -i 0.5 -t 4 -W 2 -w 5 "+ip+" >/dev/null && echo true || echo false"
+		command = exec.Command("cmd", "/c", "ping -n 1 -w 1 "+ip+" && echo true || echo false")
+		//ping -c 1 -i 0.5 -t 4 -W 2 -w 5 "+ip+" >/dev/null && echo true || echo false"
 	case "darwin":
-		command = exec.Command("/bin/bash", "-c", "ping -c 1 -W 1 "+ip+" && echo true || echo false") //ping -c 1 -i 0.5 -t 4 -W 2 -w 5 "+ip+" >/dev/null && echo true || echo false"
+		command = exec.Command("/bin/bash", "-c", "ping -c 1 -W 1 "+ip+" && echo true || echo false")
+		//ping -c 1 -i 0.5 -t 4 -W 2 -w 5 "+ip+" >/dev/null && echo true || echo false"
 	default: //linux
-		command = exec.Command("/bin/bash", "-c", "ping -c 1 -w 1 "+ip+" && echo true || echo false") //ping -c 1 -i 0.5 -t 4 -W 2 -w 5 "+ip+" >/dev/null && echo true || echo false"
+		command = exec.Command("/bin/bash", "-c", "ping -c 1 -w 1 "+ip+" && echo true || echo false")
+		//ping -c 1 -i 0.5 -t 4 -W 2 -w 5 "+ip+" >/dev/null && echo true || echo false"
 	}
-	outinfo := bytes.Buffer{}
-	command.Stdout = &outinfo
+	outInfo := bytes.Buffer{}
+	command.Stdout = &outInfo
 	err := command.Start()
 	if err != nil {
 		return false
@@ -246,7 +250,7 @@ func ExecPingCmd(ip string) bool {
 	if err = command.Wait(); err != nil {
 		return false
 	} else {
-		if strings.Contains(outinfo.String(), "true") && strings.Count(outinfo.String(), ip) > 2 {
+		if strings.Contains(outInfo.String(), "true") && strings.Count(outInfo.String(), ip) > 2 {
 			return true
 		} else {
 			return false

@@ -60,6 +60,7 @@ var (
 	HostPort    []string
 	IsWmi       bool
 	Noredistest bool
+	Outputfile  string
 )
 
 func Banner() {
@@ -97,7 +98,7 @@ func Flag(Info *HostInfo) {
 	flag.IntVar(&BruteThread, "br", 1, "Brute threads")
 	flag.BoolVar(&NoPing, "np", false, "not to ping")
 	flag.BoolVar(&Ping, "ping", false, "using ping replace icmp")
-	flag.StringVar(&Outputfile, "o", "result.txt", "Outputfile")
+	flag.StringVar(&Outputfile, "o", "r.txt", "Outputfile")
 	flag.BoolVar(&TmpSave, "no", false, "not to save output log")
 	flag.Int64Var(&WaitTime, "debug", 60, "every time to LogErr")
 	flag.BoolVar(&Silent, "silent", false, "silent scan")

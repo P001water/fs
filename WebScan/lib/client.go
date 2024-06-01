@@ -88,11 +88,13 @@ func InitHttpClient(ThreadsNum int, DownProxy string, Timeout time.Duration) err
 		Transport: tr,
 		Timeout:   Timeout,
 	}
+
 	ClientNoRedirect = &http.Client{
 		Transport:     tr,
 		Timeout:       Timeout,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error { return http.ErrUseLastResponse },
 	}
+
 	return nil
 }
 

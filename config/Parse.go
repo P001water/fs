@@ -142,7 +142,7 @@ func ParseInput(Info *HostInfo) {
 	}
 
 	if ScanPorts == DefaultPorts {
-		ScanPorts += "," + Webport
+		ScanPorts += "," + webPort
 	}
 
 	if PortAdd != "" {
@@ -221,7 +221,7 @@ func ParseScantype(Info *HostInfo) {
 	if !ok {
 		showmode()
 	}
-	if Scantype != "all" && ScanPorts == DefaultPorts+","+Webport {
+	if Scantype != "all" && ScanPorts == DefaultPorts+","+webPort {
 		switch Scantype {
 		case "wmiexec":
 			ScanPorts = "135"
@@ -234,15 +234,15 @@ func ParseScantype(Info *HostInfo) {
 		case "smb2":
 			ScanPorts = "445"
 		case "web":
-			ScanPorts = Webport
+			ScanPorts = webPort
 		case "webonly":
-			ScanPorts = Webport
+			ScanPorts = webPort
 		case "ms17010":
 			ScanPorts = "445"
 		case "cve20200796":
 			ScanPorts = "445"
 		case "portscan":
-			ScanPorts = DefaultPorts + "," + Webport
+			ScanPorts = DefaultPorts + "," + webPort
 		case "main":
 			ScanPorts = DefaultPorts
 		default:

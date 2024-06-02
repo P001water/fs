@@ -105,9 +105,9 @@ func read(text []byte, host string) error {
 
 	hostnames := strings.Replace(encodedStr, "0700", "", -1)
 	hostname := strings.Split(hostnames, "000000")
-	result := "[*] NetInfo \n[*]" + host
+	result := "[*] NetInfo \n[*] " + host
 	if name != "" {
-		result += "\n   [->]" + name
+		result += "\n   [->] " + name
 	}
 	hostname = hostname[1:]
 	for i := 0; i < len(hostname); i++ {
@@ -116,7 +116,7 @@ func read(text []byte, host string) error {
 		if err != nil {
 			return err
 		}
-		result += "\n   [->]" + string(host)
+		result += "\n   [->] " + string(host)
 	}
 	config.LogSuccess(result)
 	return nil

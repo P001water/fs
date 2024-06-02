@@ -84,10 +84,15 @@ func CheckErrs(err error) bool {
 		return false
 	}
 	errs := []string{
-		"closed by the remote host", "too many connections",
-		"i/o timeout", "EOF", "A connection attempt failed",
-		"established connection failed", "connection attempt failed",
-		"Unable to read", "is not allowed to connect to this",
+		"closed by the remote host",
+		"too many connections",
+		"i/o timeout",
+		"EOF",
+		"A connection attempt failed",
+		"established connection failed",
+		"connection attempt failed",
+		"Unable to read",
+		"is not allowed to connect to this",
 		"no pg_hba.conf entry",
 		"No connection could be made",
 		"invalid packet size",

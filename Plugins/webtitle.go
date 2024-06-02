@@ -29,11 +29,12 @@ func WebTitle(info *config.HostInfo) error {
 	if !config.NoPoc && err == nil {
 		WebScan.WebScan(info)
 	} else {
-		errlog := fmt.Sprintf("[-] webtitle %v %v", info.Url, err)
-		config.LogError(errlog)
+		errLog := fmt.Sprintf("[-] webtitle %v %v", info.Url, err)
+		config.LogError(errLog)
 	}
 	return err
 }
+
 func GOWebTitle(info *config.HostInfo) (err error, CheckData []WebScan.CheckDatas) {
 	if info.Url == "" {
 		switch info.Ports {
@@ -239,6 +240,7 @@ func GetProtocol(host string, Timeout int64) (protocol string) {
 					config.LogError(err)
 				}
 			}()
+			conn.Close()
 			conn.Close()
 		}
 	}()

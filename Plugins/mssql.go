@@ -13,7 +13,7 @@ func MssqlScan(info *config.HostInfo) (tmperr error) {
 	if config.NoBrute {
 		return
 	}
-	starttime := time.Now().Unix()
+	startTime := time.Now().Unix()
 	for _, user := range config.Userdict["mssql"] {
 		for _, pass := range config.Passwords {
 			pass = strings.Replace(pass, "{user}", user, -1)
@@ -21,13 +21,13 @@ func MssqlScan(info *config.HostInfo) (tmperr error) {
 			if flag == true && err == nil {
 				return err
 			} else {
-				errlog := fmt.Sprintf("[-] mssql %v:%v %v %v %v", info.Host, info.Ports, user, pass, err)
-				config.LogError(errlog)
+				errLog := fmt.Sprintf("[-] mssql %v:%v %v %v %v", info.Host, info.Ports, user, pass, err)
+				config.LogError(errLog)
 				tmperr = err
 				if config.CheckErrs(err) {
 					return err
 				}
-				if time.Now().Unix()-starttime > (int64(len(config.Userdict["mssql"])*len(config.Passwords)) * config.Timeout) {
+				if time.Now().Unix()-startTime > (int64(len(config.Userdict["mssql"])*len(config.Passwords)) * config.Timeout) {
 					return err
 				}
 			}
@@ -48,7 +48,7 @@ func MssqlConn(info *config.HostInfo, user string, pass string) (flag bool, err 
 		defer db.Close()
 		err = db.Ping()
 		if err == nil {
-			result := fmt.Sprintf("[+] mssql %v:%v:%v %v", Host, Port, Username, Password)
+			result := fmt.Sprintf("[+] mssql %v:%v %v %v", Host, Port, Username, Password)
 			config.LogSuccess(result)
 			flag = true
 		}

@@ -11,7 +11,6 @@ import (
 )
 
 func sshBruteforce(info *config.HostInfo) (tmperr error) {
-	// 检查是否启用暴力破解
 	if config.NoBrute {
 		return
 	}
@@ -85,7 +84,7 @@ func attemptSSH(info *config.HostInfo, user string, pass string) (flag bool, err
 			}
 			config.LogSuccess(result)
 		} else {
-			result = fmt.Sprintf("[+] SSH %v:%v:%v %v", Host, Port, Username, Password)
+			result = fmt.Sprintf("[+] SSH %v:%v %v %v", Host, Port, Username, Password)
 			if config.SshKey != "" {
 				result = fmt.Sprintf("[+] SSH %v:%v sshkey correct", Host, Port)
 			}

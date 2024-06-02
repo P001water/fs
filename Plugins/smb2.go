@@ -16,7 +16,7 @@ func SmbScan2(info *config.HostInfo) (tmperr error) {
 		return nil
 	}
 	hasprint := false
-	starttime := time.Now().Unix()
+	startTime := time.Now().Unix()
 	hash := config.HashBytes
 	for _, user := range config.Userdict["smb"] {
 	PASS:
@@ -53,7 +53,7 @@ func SmbScan2(info *config.HostInfo) (tmperr error) {
 				if config.CheckErrs(err) {
 					return err
 				}
-				if time.Now().Unix()-starttime > (int64(len(config.Userdict["smb"])*len(config.Passwords)) * config.Timeout) {
+				if time.Now().Unix()-startTime > (int64(len(config.Userdict["smb"])*len(config.Passwords)) * config.Timeout) {
 					return err
 				}
 			}

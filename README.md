@@ -10,15 +10,20 @@
 * 优化存活主机输出顺序 - 按顺序输出
 
 * 优化端口探测结果输出 - 如下图
+* 修改输出文件名 - r.txt
 * 其他逻辑修改等等
 
+注：fscan 1.8.4的releases在win7等平台运行报错
 
+go 从 1.21版本放弃了对Windows 全平台的支持，，编译go版本建议使用go 1.20
+
+[Go 1.20 Release Notes - The Go Programming Language](https://go.dev/doc/go1.20#windows)
 
 
 
 ##  使用演示
 
-大致使用方法和fscan差不多
+其他大致使用方法和fscan差不多
 
 ```
 fs -h 101.43.3.85-100

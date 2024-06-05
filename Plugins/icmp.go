@@ -36,7 +36,7 @@ func sortIPs(ips []string) {
 	})
 }
 
-func IPsortHandleWorker(Ping bool, WaitCheckHosts []string, AliveHostsChan chan string) {
+func ipSortHandleWorker(Ping bool, AliveHostsChan chan string) {
 	for ip := range AliveHostsChan {
 		AliveHosts = append(AliveHosts, ip)
 		liveWG.Done()
@@ -65,7 +65,7 @@ func CheckHostLive(WaitCheckHosts []string, Ping bool) []string {
 
 	// chan 接收存活主机并处理
 	aliveHostsChan := make(chan string, len(WaitCheckHosts))
-	go IPsortHandleWorker(Ping, WaitCheckHosts, aliveHostsChan)
+	go ipSortHandleWorker(Ping, aliveHostsChan)
 
 	if Ping == false {
 		// 优先尝试监听本地icmp,批量探测

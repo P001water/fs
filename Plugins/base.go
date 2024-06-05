@@ -13,7 +13,7 @@ var PluginList = map[string]interface{}{
 	"21":      FtpScan,
 	"22":      sshBruteforce,
 	"135":     Findnet,
-	"139":     NetBIOS, // 重写这个模块fscan就免杀火绒了
+	"139":     NetBIOS,
 	"445":     SmbScan,
 	"1433":    MssqlScan,
 	"1521":    OracleScan,

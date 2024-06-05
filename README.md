@@ -18,7 +18,9 @@
 
 go 从 1.21版本放弃了对Windows 全平台的支持，，编译go版本建议使用go 1.20
 
-[Go 1.20 Release Notes - The Go Programming Language](https://go.dev/doc/go1.20#windows)
+参考：[Go 1.20 Release Notes - The Go Programming Language](https://go.dev/doc/go1.20#windows)
+
+tips: 360不杀 火绒fscan特征消除（代码里藏有免杀的密码）
 
 
 

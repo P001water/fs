@@ -105,7 +105,7 @@ func read(text []byte, host string) error {
 
 	hostnames := strings.Replace(encodedStr, "0700", "", -1)
 	hostname := strings.Split(hostnames, "000000")
-	result := "[*] NetInfo \n[*] " + host
+	result := "[NetInfo] \n[*] " + host
 	if name != "" {
 		result += "\n   [->] " + name
 	}

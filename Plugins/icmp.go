@@ -67,32 +67,34 @@ func CheckHostLive(WaitCheckHosts []string, Ping bool) []string {
 	aliveHostsChan := make(chan string, len(WaitCheckHosts))
 	go ipSortHandleWorker(Ping, aliveHostsChan)
 
-	if Ping == false {
+	if Ping == true {
+		//使用ping探测
+		RunPing(WaitCheckHosts, aliveHostsChan)
+	} else {
 		// 优先尝试监听本地icmp,批量探测
 		conn, err := icmp.ListenPacket("ip4:icmp", "0.0.0.0")
-		if err != nil {
+		if err == nil {
+			RunIcmpWithLst(WaitCheckHosts, conn, aliveHostsChan)
+		} else {
 			config.LogError(err)
 			//尝试无监听icmp探测
-			fmt.Println("trying RunIcmpWithoutLst")
+			fmt.Println("[-] trying RunIcmpWithoutLst")
 			conn, err := net.DialTimeout("ip4:icmp", "127.0.0.1", 3*time.Second)
-			if err != nil {
+			defer func() {
+				if conn != nil {
+					conn.Close()
+				}
+			}()
+			if err == nil {
+				RunIcmpWithoutLst(WaitCheckHosts, aliveHostsChan)
+			} else {
 				config.LogError(err)
 				//使用ping探测
 				fmt.Println("[-] The current user permissions unable to send icmp packets")
 				fmt.Println("[-] start ping")
 				RunPing(WaitCheckHosts, aliveHostsChan)
-			} else {
-				RunIcmpWithoutLst(WaitCheckHosts, aliveHostsChan)
 			}
-			defer conn.Close()
 		}
-		defer conn.Close()
-		RunIcmpWithLst(WaitCheckHosts, conn, aliveHostsChan)
-	}
-
-	if Ping == true {
-		//使用ping探测
-		RunPing(WaitCheckHosts, aliveHostsChan)
 	}
 
 	liveWG.Wait()
